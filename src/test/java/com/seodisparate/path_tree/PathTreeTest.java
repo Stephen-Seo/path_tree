@@ -7,11 +7,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class PathTreeTest {
-//    @Test public void testSomeLibraryMethod() {
-//        Library classUnderTest = new Library();
-//        assertTrue("someLibraryMethod should return 'true'", classUnderTest.someLibraryMethod());
-//    }
-
     @Test public void test_print_list() {
         PathTree pathTree = new PathTree();
 
@@ -54,5 +49,22 @@ public class PathTreeTest {
         assertTrue(pathTree.has("/derp/a"));
         assertTrue(pathTree.has("/derp/a/doodle"));
         assertTrue(pathTree.has("/derp/a/doodle/doo"));
+    }
+
+    @Test public void test_stored_data() {
+        PathTree<Integer> pathTree = new PathTree<>();
+
+        assertTrue(pathTree.put("/one", 1));
+        assertTrue(pathTree.put("/two", 2));
+        assertTrue(pathTree.put("/three", 3));
+        assertTrue(pathTree.put("/four", 4));
+
+        assertEquals(pathTree.get("/one").getData(), Integer.valueOf(1));
+        assertEquals(pathTree.get("/two").getData(), Integer.valueOf(2));
+        assertEquals(pathTree.get("/three").getData(), Integer.valueOf(3));
+        assertEquals(pathTree.get("/four").getData(), Integer.valueOf(4));
+
+        pathTree.get("/one").setData(100);
+        assertEquals(pathTree.get("/one").getData(), Integer.valueOf(100));
     }
 }

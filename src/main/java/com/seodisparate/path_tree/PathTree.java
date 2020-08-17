@@ -38,19 +38,32 @@ import java.io.Serializable;
 /**
  * The PathTree class helps to keep track of a directory structure. It implements Serializable.
  */
-public class PathTree implements Serializable {
+public class PathTree<T> implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private class PathNode {
-        String segment;
-        String full_path;
-        Map<String, PathNode> inner;
+    public class PathNode {
+        private String segment;
+        private String full_path;
+        private Map<String, PathNode> inner;
+        private T data;
         public PathNode(String segment, String full_path) {
             this.segment = segment;
             this.full_path = full_path;
             inner = new HashMap<String, PathNode>();
+            data = null;
         }
 
+        public PathNode(String segment, String full_path, T data) {
+            this.segment = segment;
+            this.full_path = full_path;
+            this.data = data;
+            inner = new HashMap<String, PathNode>();
+        }
+
+        /**
+         * Does a "prefix" traversal of the tree with the current node as root.
+         * @param action The function to call during a "prefix" traversal
+         */
         public void prefix(Consumer<PathNode> action) {
             action.accept(this);
             for(PathNode node : inner.values()) {
@@ -58,6 +71,11 @@ public class PathTree implements Serializable {
             }
         }
 
+        /**
+         * Does a "postfix" traversal of the tree with the current node as
+         * root.
+         * @param action The function to call during a "postfix" traversal
+         */
         public void postfix(Consumer<PathNode> action) {
             for(PathNode node : inner.values()) {
                 node.postfix(action);
@@ -65,15 +83,43 @@ public class PathTree implements Serializable {
             action.accept(this);
         }
 
+        /**
+         * Gets the segment string represented by this node
+         * @return Returns the segment
+         */
         public String getSegment() {
             return segment;
         }
 
+        /**
+         * Gets the full path represented by this node
+         * @return Returns the full path
+         */
         public String getFullPath() {
             return full_path;
         }
 
-        public boolean put(String full_path) {
+        /**
+         * Gets the data associated with this node, or null if there is none.
+         * @return The data associated with this node
+         */
+        public T getData() {
+            return data;
+        }
+
+        /**
+         * Sets the data associated with this node. Can be null.
+         * @param data The data to store with this node
+         */
+        public void setData(T data) {
+            this.data = data;
+        }
+
+        private boolean put(String full_path) {
+            return put(full_path, null);
+        }
+
+        private boolean put(String full_path, T data) {
             if(full_path.startsWith(this.full_path)) {
                 String sub = full_path.substring(this.full_path.length());
                 while(sub.startsWith("/")) {
@@ -94,6 +140,7 @@ public class PathTree implements Serializable {
                     PathNode newPathNode = new PathNode(segment, next_full_path);
                     inner.put(segment, newPathNode);
                     if(index == -1) {
+                        newPathNode.data = data;
                         return true;
                     } else {
                         return inner.get(segment).put(full_path);
@@ -104,6 +151,11 @@ public class PathTree implements Serializable {
             }
         }
 
+        /**
+         * Returns true if the full_path exists in the tree.
+         * @param full_path The full path to check
+         * @return True if the path exists
+         */
         public boolean has(String full_path) {
             if(full_path.equals(this.full_path)) {
                 return true;
@@ -125,7 +177,33 @@ public class PathTree implements Serializable {
             }
         }
 
-        public boolean remove(String full_path) {
+        /**
+         * Returns the PathNode at the given full_path, or null if there is none
+         * @param full_path The full path to check
+         * @return A PathNode if it exists, or null
+         */
+        public PathNode get(String full_path) {
+            if(full_path.equals(this.full_path)) {
+                return this;
+            } else if(full_path.startsWith(this.full_path)) {
+                String sub = full_path.substring(this.full_path.length());
+                while(sub.startsWith("/")) {
+                    sub = sub.substring(1);
+                }
+                int index = sub.indexOf('/');
+                String segment = index == -1 ? sub : sub.substring(0, index);
+                //System.out.println("full_path = \"" + full_path + "\", this.full_path = \"" + this.full_path + "\", sub = \"" + sub + "\", segment = \"" + segment + "\"");
+                if(inner.containsKey(segment)) {
+                    return inner.get(segment).get(full_path);
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
+
+        private boolean remove(String full_path) {
             if(full_path.startsWith(this.full_path)) {
                 String sub = full_path.substring(this.full_path.length());
                 while(sub.startsWith("/")) {
@@ -177,13 +255,26 @@ public class PathTree implements Serializable {
      * the path was invalid
      */
     public boolean put(String full_path) {
+        return put(full_path, null);
+    }
+
+    /**
+     * Puts a path into the directory structure with the associated data. Parent
+     * directories need not be specified first, as this data structure will
+     * automatically create them for you. Note that if the path already exists,
+     * the data will not be set.
+     * @param full_path The path to put in the directory structure
+     * @param data The data to associate with the given path
+     * @return True if the path was created and data stored
+     */
+    public boolean put(String full_path, T data) {
         while(full_path.endsWith("/")) {
             full_path = full_path.substring(0, full_path.length() - 1);
             if(full_path.length() == 0) {
                 return false;
             }
         }
-        return root.put(full_path);
+        return root.put(full_path, data);
     }
 
     /**
@@ -199,6 +290,22 @@ public class PathTree implements Serializable {
             }
         }
         return root.has(full_path);
+    }
+
+    /**
+     * Gets a PathNode at the given full_path, or null if it doesn't exist.
+     * @param full_path The path to lookup
+     * @return An existing PathNode instance, or null if there is no node at the
+     * given path
+     */
+    public PathNode get(String full_path) {
+        while(full_path.endsWith("/")) {
+            full_path = full_path.substring(0, full_path.length() - 1);
+            if(full_path.length() == 0) {
+                return null;
+            }
+        }
+        return root.get(full_path);
     }
 
     /**
