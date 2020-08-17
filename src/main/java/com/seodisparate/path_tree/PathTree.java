@@ -35,6 +35,9 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
+/**
+ * The PathTree class helps to keep track of a directory structure. It implements Serializable.
+ */
 public class PathTree implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -152,6 +155,10 @@ public class PathTree implements Serializable {
         root = new PathNode("/", "/");
     }
 
+    /**
+     * Invokes "action" on leaves of the stored directory structure.
+     * @param action The action to call with the full path of each leaf
+     */
     public void leavesOnly(Consumer<String> action) {
         root.postfix((n) -> {
             if(n.inner.isEmpty()) {
@@ -160,6 +167,14 @@ public class PathTree implements Serializable {
         });
     }
 
+    /**
+     * Puts a path into the directory structure. Parent directories need not be
+     * specified first, as this data structure will automatically create them
+     * for you.
+     * @param full_path The path to put in the directory structure
+     * @return True if the path was created, false if it existed already or if
+     * the path was invalid
+     */
     public boolean put(String full_path) {
         while(full_path.endsWith("/")) {
             full_path = full_path.substring(0, full_path.length() - 1);
@@ -170,6 +185,11 @@ public class PathTree implements Serializable {
         return root.put(full_path);
     }
 
+    /**
+     * Checks if a path exists in the directory structure.
+     * @param full_path The path to check
+     * @return True if the path exists
+     */
     public boolean has(String full_path) {
         while(full_path.endsWith("/")) {
             full_path = full_path.substring(0, full_path.length() - 1);
@@ -180,6 +200,12 @@ public class PathTree implements Serializable {
         return root.has(full_path);
     }
 
+    /**
+     * Removes a path from the directory structure. Note that child paths will
+     * also be removed.
+     * @param full_path The path to remove
+     * @return True if the path was found and was removed
+     */
     public boolean remove(String full_path) {
         while(full_path.endsWith("/")) {
             full_path = full_path.substring(0, full_path.length() - 1);
@@ -190,14 +216,22 @@ public class PathTree implements Serializable {
         return root.remove(full_path);
     }
 
+    /**
+     * Resets PathTree to the initial state of only having a root directory.
+     */
     public void clear() {
         root = new PathNode("/", "/");
     }
 
+    /**
+     * Prints all paths in the directory structure. Note this will only print
+     * paths to each leaf.
+     */
     public void printList() {
-        root.prefix((n) -> System.out.println(n.full_path));
+        leavesOnly((n) -> System.out.println(n));
     }
 
+    // Function required for serialization
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         Collection<String> leaves = new ArrayList<String>();
         leavesOnly((path) -> leaves.add(path));
@@ -207,6 +241,7 @@ public class PathTree implements Serializable {
         }
     }
 
+    // Function required for deserialization
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         clear();
 
@@ -216,6 +251,7 @@ public class PathTree implements Serializable {
         }
     }
 
+    // Function required for deserialization
     private void readObjectNoData() throws ObjectStreamException {
         clear();
     }
