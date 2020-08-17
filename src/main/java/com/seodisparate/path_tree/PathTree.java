@@ -105,7 +105,7 @@ public class PathTree implements Serializable {
         }
 
         public boolean has(String full_path) {
-            if(full_path == this.full_path) {
+            if(full_path.equals(this.full_path)) {
                 return true;
             } else if(full_path.startsWith(this.full_path)) {
                 String sub = full_path.substring(this.full_path.length());
@@ -114,6 +114,7 @@ public class PathTree implements Serializable {
                 }
                 int index = sub.indexOf('/');
                 String segment = index == -1 ? sub : sub.substring(0, index);
+                //System.out.println("full_path = \"" + full_path + "\", this.full_path = \"" + this.full_path + "\", sub = \"" + sub + "\", segment = \"" + segment + "\"");
                 if(inner.containsKey(segment)) {
                     return inner.get(segment).has(full_path);
                 } else {
@@ -194,7 +195,7 @@ public class PathTree implements Serializable {
         while(full_path.endsWith("/")) {
             full_path = full_path.substring(0, full_path.length() - 1);
             if(full_path.length() == 0) {
-                return false;
+                return true;
             }
         }
         return root.has(full_path);

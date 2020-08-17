@@ -43,4 +43,16 @@ public class PathTreeTest {
 
         pathTree.printList();
     }
+
+    @Test public void test_partial_has() {
+        PathTree pathTree = new PathTree();
+
+        assertTrue(pathTree.put("/derp/a/doodle/doo"));
+
+        assertTrue(pathTree.has("/"));
+        assertTrue(pathTree.has("/derp"));
+        assertTrue(pathTree.has("/derp/a"));
+        assertTrue(pathTree.has("/derp/a/doodle"));
+        assertTrue(pathTree.has("/derp/a/doodle/doo"));
+    }
 }
