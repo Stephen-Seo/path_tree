@@ -302,7 +302,7 @@ public class PathTree<T> implements Serializable {
         while(full_path.endsWith("/")) {
             full_path = full_path.substring(0, full_path.length() - 1);
             if(full_path.length() == 0) {
-                return null;
+                return root;
             }
         }
         return root.get(full_path);

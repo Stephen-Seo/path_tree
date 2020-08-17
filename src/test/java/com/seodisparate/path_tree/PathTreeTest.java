@@ -66,5 +66,10 @@ public class PathTreeTest {
 
         pathTree.get("/one").setData(100);
         assertEquals(pathTree.get("/one").getData(), Integer.valueOf(100));
+        assertEquals(pathTree.get("/two").getData(), Integer.valueOf(2));
+        assertEquals(pathTree.get("/three").getData(), Integer.valueOf(3));
+        assertEquals(pathTree.get("/four").getData(), Integer.valueOf(4));
+
+        assertNotNull(pathTree.get("/"));
     }
 }
