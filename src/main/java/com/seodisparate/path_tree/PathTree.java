@@ -185,11 +185,9 @@ public class PathTree implements Serializable {
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         clear();
 
-        String leaf;
         int size = in.readInt();
         for(int i = 0; i < size; ++i) {
-            leaf = in.readUTF();
-            put(leaf);
+            put(in.readUTF());
         }
     }
 
